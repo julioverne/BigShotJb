@@ -21,16 +21,7 @@
 {
 	NSLog(@"captureScreenShot called !!!");
 	UIImage *image = [self.keyWindow takeFullScreenShot];
-    UIImageWriteToSavedPhotosAlbum(image, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
-    
-}
-- (void)image:(UIImage *)image didFinishSavingWithError:(NSError *)error contextInfo:(void *)contextInfo
-{
-	if(error == nil) {
- 		[self.keyWindow makeToast:@"BigShot saved !!!!"];
- 	} else {
- 		[self.keyWindow makeToast:error.localizedDescription];
- 	}
+	[[UIPasteboard generalPasteboard] setData:/*UIImagePNGRepresentation(image)*/UIImageJPEGRepresentation(image, 1.0) forPasteboardType:@"bigshot-to-save"];
 }
 @end
 
@@ -48,23 +39,47 @@ static NSArray *blackList = [@[ @"MailAppController", @"FBWildeApplication" ] co
 		if ([@"SpringBoard" isEqualToString:classString]) {
 			NSLog(@"Registering SpringBoard for activator events");
 			[_sharedObject RegisterActions];
+			[NSTimer scheduledTimerWithTimeInterval:1 target:_sharedObject selector:@selector(checkShotSave) userInfo:nil repeats:YES];
 		} else if (![blackList containsObject:classString]) {
-			CPDistributedMessagingCenter *c = [CPDistributedMessagingCenter centerNamed:[NSString stringWithFormat:@"com.tapthaker.bigshotjb-%@", [[NSBundle mainBundle] bundleIdentifier]]];
-			rocketbootstrap_distributedmessagingcenter_apply(c);
-			[c registerForMessageName:@"captureScreenShot" target:_sharedObject selector:@selector(takeScreeshot)];
-			[c runServerOnCurrentThread];
+			[NSTimer scheduledTimerWithTimeInterval:1 target:_sharedObject selector:@selector(checkIfValid) userInfo:nil repeats:YES];
 		}
 	}
 	return _sharedObject;
+}
+- (void)checkShotSave
+{
+	NSData *imageData = [[UIPasteboard generalPasteboard] dataForPasteboardType:@"bigshot-to-save"];
+	if(imageData && imageData.length>0) {
+		[[UIPasteboard generalPasteboard] setData:[NSData data] forPasteboardType:@"bigshot-to-save"];
+		UIImageWriteToSavedPhotosAlbum([[UIImage alloc] initWithData:imageData], self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
+	}
+}
+- (void)image:(UIImage *)image didFinishSavingWithError:(NSError *)error contextInfo:(void *)contextInfo
+{
+	if(error == nil) {
+ 		[[UIApplication sharedApplication].keyWindow makeToast:@"BigShot saved !!!!"];
+ 	} else {
+ 		[[UIApplication sharedApplication].keyWindow makeToast:error.localizedDescription];
+ 	}
+}
+- (void)checkIfValid
+{
+	NSString *expected = [NSString stringWithFormat:@"com.tapthaker.bigshotjb-%@", [[NSBundle mainBundle] bundleIdentifier]];
+	NSData *takeCMD = [[UIPasteboard generalPasteboard] dataForPasteboardType:expected];
+	if(takeCMD && takeCMD.length>0) {
+		[[UIPasteboard generalPasteboard] setData:[NSData data] forPasteboardType:expected];
+		[self takeScreenshot];
+	}
 }
 - (void)loader
 {
 	NSLog(@"Loaded");
 	return;
 }
-- (void)takeScreeshot
+- (void)takeScreenshot
 {
 	dispatch_async(dispatch_get_main_queue(), ^{
+		NSLog(@"- (void)takeScreenshot");
 		[[UIApplication sharedApplication] captureScreenShot];
 	});
 }
@@ -81,9 +96,7 @@ static NSArray *blackList = [@[ @"MailAppController", @"FBWildeApplication" ] co
 {
 	SBApplication *front = (SBApplication*) [(SpringBoard*)[UIApplication sharedApplication] _accessibilityFrontMostApplication];
 	if(front) {
-		CPDistributedMessagingCenter *c = [CPDistributedMessagingCenter centerNamed:[NSString stringWithFormat:@"com.tapthaker.bigshotjb-%@", front.bundleIdentifier]];
-		rocketbootstrap_distributedmessagingcenter_apply(c);
-		[c sendMessageName:@"captureScreenShot" userInfo:nil];
+		[[UIPasteboard generalPasteboard] setData:[NSData dataWithBytes:"take" length:4] forPasteboardType:[NSString stringWithFormat:@"com.tapthaker.bigshotjb-%@", front.bundleIdentifier]];
 	}
 	event.handled = YES;
 }
