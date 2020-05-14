@@ -1,16 +1,17 @@
+FINALPACKAGE=1
+DEBUG = 0
+
 include $(THEOS)/makefiles/common.mk
 
-
-
 TWEAK_NAME = BigShotJb
-BigShotJb_FILES = /mnt/d/codes/BigShotJb/Listener.xm /mnt/d/codes/BigShotJb/UIWindow+Bigshot.m /mnt/d/codes/BigShotJb/UIView+Toast.m
-BigShotJb_FRAMEWORKS = UIKit CoreGraphics QuartzCore CydiaSubstrate
-BigShotJb_LIBRARIES = rocketbootstrap
-BigShotJb_PRIVATE_FRAMEWORKS = AppSupport
+$(TWEAK_NAME)_FILES = Listener.xm UIWindow+Bigshot.m UIView+Toast.m
+$(TWEAK_NAME)_FRAMEWORKS = UIKit CoreGraphics QuartzCore CydiaSubstrate
+$(TWEAK_NAME)_LIBRARIES = rocketbootstrap
+$(TWEAK_NAME)_PRIVATE_FRAMEWORKS = AppSupport
 #SHARED_CFLAGS = -fobjc-arc
 
-export ARCHS = armv7 arm64
-BigShotJb_ARCHS = armv7 arm64
+export ARCHS = armv7 arm64 arm64e
+$(TWEAK_NAME)_ARCHS = armv7 arm64 arm64e
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 

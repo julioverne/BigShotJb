@@ -1,0 +1,10 @@
+Package: com.tapthaker.bigshotjb11
+Name: BigShotJb (iOS 11)
+Description: A way to take screenshots of full vertically scrollable area of the screen.
+Version: 0.0.2-3
+Priority: optional
+Section: Tweaks
+Architecture: iphoneos-arm
+Depends: firmware (>= 8.0), mobilesubstrate, libactivator (>= 1.8.3), com.rpetrich.rocketbootstrap
+Author: Tapan Thaker (tapthaker)
+Conflicts: com.tapthaker.bigshotjb

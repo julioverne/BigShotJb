@@ -11,7 +11,7 @@
 #import <dlfcn.h>
 #import <objc/runtime.h>
 
-#import "UIWindow+BigShot.h"
+#import "UIWindow+Bigshot.h"
 #import "UIView+Toast.h"
 
 #define NSLog(...)
